@@ -8,6 +8,7 @@ function Email() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const summary = result?.summary;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -51,9 +52,15 @@ function Email() {
       {result && (
         <div className="grid gap-4 md:grid-cols-2">
           <Card title="Email OSINT Results">
-            <pre className="overflow-auto whitespace-pre-wrap text-xs text-slate-300">
-              {JSON.stringify(result.results, null, 2)}
-            </pre>
+            <p className="mb-2 text-sm text-slate-300">
+              Platforms found: {summary?.platforms_found ?? 0} | Links found: {summary?.links_found ?? 0}
+            </p>
+            <details>
+              <summary className="cursor-pointer text-sm text-slate-300">Show raw output</summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap text-xs text-slate-300">
+                {JSON.stringify(result.results, null, 2)}
+              </pre>
+            </details>
           </Card>
           <Card title="Report">
             <a

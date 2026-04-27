@@ -28,6 +28,7 @@ function Username() {
 
   const maigret = result?.results?.maigret;
   const sherlock = result?.results?.sherlock;
+  const summary = result?.summary;
 
   return (
     <div className="space-y-5">
@@ -53,20 +54,38 @@ function Username() {
       {result && (
         <div className="grid gap-4 md:grid-cols-2">
           <Card title="Maigret Results">
-            <pre className="overflow-auto whitespace-pre-wrap text-xs text-slate-300">
-              {JSON.stringify(maigret, null, 2)}
-            </pre>
+            <details>
+              <summary className="cursor-pointer text-sm text-slate-300">Show raw output</summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap text-xs text-slate-300">
+                {JSON.stringify(maigret, null, 2)}
+              </pre>
+            </details>
           </Card>
           <Card title="Sherlock Results">
-            <pre className="overflow-auto whitespace-pre-wrap text-xs text-slate-300">
-              {JSON.stringify(sherlock, null, 2)}
-            </pre>
+            <details>
+              <summary className="cursor-pointer text-sm text-slate-300">Show raw output</summary>
+              <pre className="mt-2 overflow-auto whitespace-pre-wrap text-xs text-slate-300">
+                {JSON.stringify(sherlock, null, 2)}
+              </pre>
+            </details>
           </Card>
           <Card title="Platforms And Links">
             <p className="mb-2 text-sm text-slate-300">
-              Outputs include platform discovery and profile links from Maigret/Sherlock command results.
+              Platforms found: {summary?.platforms_found ?? 0} | Links found: {summary?.links_found ?? 0}
             </p>
-            <p className="text-xs text-slate-400">Review stdout/stderr in result cards for full extracted links.</p>
+            {summary?.links?.length ? (
+              <ul className="space-y-1 text-xs text-cyan-300">
+                {summary.links.slice(0, 8).map((link) => (
+                  <li key={link} className="truncate">
+                    <a href={link} target="_blank" rel="noreferrer" className="hover:underline">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-slate-400">No profile links extracted for this run.</p>
+            )}
           </Card>
           <Card title="Report">
             {result.report_path ? (
