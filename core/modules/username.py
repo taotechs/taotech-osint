@@ -20,13 +20,14 @@ def run_username(username: str) -> Dict[str, Any]:
     }
 
     if is_tool_installed("maigret"):
-        maigret_report = reports_dir / f"maigret_{username}.html"
         maigret_command = [
             "maigret",
             username,
-            "--html",
-            "--output",
-            str(maigret_report),
+            "-H",
+            "--no-color",
+            "--no-progressbar",
+            "--folderoutput",
+            str(reports_dir),
         ]
         results["maigret"] = run_command(maigret_command)
     else:
