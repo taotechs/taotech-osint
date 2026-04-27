@@ -1,144 +1,156 @@
 # Taotech OSINT Toolkit
 
-Clean, modular, and beginner-friendly OSINT toolkit built with Python 3.10+.
+Taotech OSINT Toolkit is a full-stack internal OSINT platform with:
+- a core Python OSINT engine,
+- a Flask API layer,
+- and a React cyber dashboard.
 
-## Features
+This guide is written to be practical and easy to follow.
 
-- Username OSINT with `maigret` and `sherlock`
-- Email OSINT with `holehe`
-- Domain OSINT with `theHarvester`
-- Menu-driven CLI
-- Structured subprocess execution (`subprocess`, not `os.system`)
-- Logging to `logs.txt`
-- Report output in `reports/`
+## What You Get
+
+- Username scanning (`maigret`, `sherlock`)
+- Email scanning (`holehe`)
+- Domain scanning (`theHarvester`)
+- Flask REST API for frontend/backend integration
+- React dashboard with scan pages and report download
+- Structured HTML reports in `core/reports/`
+- Logging in `logs.txt`
+
+## Architecture (Dependency Flow)
+
+`React -> Flask -> Bridge -> Core -> OSINT CLI tools`
+
+- Frontend calls Flask endpoints only.
+- Flask routes call `backend/services/osint_bridge.py` only.
+- Bridge calls `core/modules/*` only.
+- Core modules execute OSINT tools via subprocess.
 
 ## Project Structure
 
 ```text
 taotech-osint/
-├── main.py
+├── main.py                       # CLI entrypoint
 ├── core/
-│   └── modules/
-│       ├── username.py
-│       ├── email.py
-│       └── domain.py
-│   └── utils/
-│       ├── runner.py
-│       └── logger.py
+│   ├── modules/                  # Core OSINT engine
+│   ├── reporting/                # Structured report generator
+│   ├── reports/                  # Generated HTML reports
+│   └── utils/                    # Core runner/logger
 ├── backend/
-│   ├── app.py
-│   ├── routes/
-│   │   ├── username_routes.py
-│   │   ├── email_routes.py
-│   │   └── domain_routes.py
-│   ├── services/
-│   │   ├── osint_bridge.py
-│   │   └── osint_service.py
-│   └── utils/
-│       ├── response.py
-│       └── logger.py
-├── modules/
-│   ├── username.py
-│   ├── email.py
-│   └── domain.py
-├── utils/
-│   ├── logger.py
-│   └── runner.py
-├── reports/
+│   ├── app.py                    # Flask app entrypoint
+│   ├── routes/                   # API routes
+│   ├── services/                 # Bridge/service layer
+│   └── utils/                    # API helpers
+├── frontend/                     # React + Vite dashboard
+├── tests/                        # Pytest suite
 ├── requirements.txt
 └── README.md
 ```
 
-## Installation
+## Prerequisites
 
-1. Make sure Python 3.10+ is installed.
-2. Install dependencies:
+- Python `3.10+`
+- Node.js `18+` and npm
+- OSINT CLI tools accessible in PATH:
+  - `maigret`
+  - `sherlock`
+  - `holehe`
+  - `theHarvester`
+
+> If a tool is missing, scans fail gracefully with a clear error message.
+
+## Setup
+
+### 1) Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-> You may also need to ensure CLI tools are available in your system PATH.
+### 2) Install frontend dependencies
 
-## Usage
+```bash
+cd frontend
+npm install
+cd ..
+```
 
-Run:
+## How To Run (Recommended Full Stack)
+
+Use two terminals.
+
+### Terminal A: Start Flask API
+
+```bash
+python -m backend.app
+```
+
+Backend runs on: `http://127.0.0.1:5000`
+
+### Terminal B: Start React dashboard
+
+```bash
+cd frontend
+npm run dev
+```
+
+Frontend runs on Vite URL (usually `http://127.0.0.1:5173`).
+
+## API Reference
+
+Base URL: `http://127.0.0.1:5000`
+
+- `GET /api/health`
+- `GET /api/osint/username?username=<value>`
+- `GET /api/osint/email?email=<value>`
+- `GET /api/osint/domain?domain=<value>`
+- `GET /api/reports`
+- `GET /api/reports/view/<filename>`
+- `GET /api/reports/download/<filename>`
+
+## CLI Usage (Optional)
+
+You can run scans without Flask/React:
 
 ```bash
 python main.py
 ```
 
-Then select:
-
+Menu options:
 1. Username Search
 2. Email Search
 3. Domain Search
 4. Exit
 
-## Flask API Usage
+## Reports
 
-Run:
+- A structured HTML report is generated after each scan.
+- Location: `core/reports/`
+- Report content includes:
+  - scan timestamp
+  - platform/tool status
+  - extracted links
+  - raw result snapshot
 
-```bash
-python -m backend.app
-```
+## Testing
 
-Available endpoints:
-
-- `GET /api/health`
-- `GET /api/reports`
-- `GET /api/osint/username?username=target`
-- `GET /api/osint/email?email=target@example.com`
-- `GET /api/osint/domain?domain=example.com`
-- `GET /reports/<filename>.html`
-
-## React Frontend Usage
-
-The dashboard frontend is in `frontend/` and consumes the Flask API at `http://127.0.0.1:5000`.
-
-Run frontend:
+Run backend/core tests:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+python -m pytest -q
 ```
 
-## End-to-End Run
+## Troubleshooting
 
-1. Start Flask backend:
-```bash
-python -m backend.app
-```
-2. Start React frontend in a new terminal:
-```bash
-cd frontend
-npm run dev
-```
-3. Open the Vite URL (usually `http://127.0.0.1:5173`) and run scans from the dashboard.
+- **No inputs found in frontend tsconfig**
+  - Already handled by enabling JS in `frontend/tsconfig.json`.
+- **Tool not found errors**
+  - Install missing OSINT tool and ensure it is in PATH.
+- **Frontend cannot reach backend**
+  - Confirm backend is running on `http://127.0.0.1:5000`.
+- **No reports listed**
+  - Run at least one scan, then refresh `Reports` page.
 
-## Architecture Flow
+## Security and Legal Notice
 
-- React dashboard calls Flask API endpoints only.
-- Flask routes call `backend/services/osint_bridge.py` only.
-- Bridge layer calls `core/modules/*` only.
-- Core modules call OSINT tool binaries (`maigret`, `sherlock`, `holehe`, `theHarvester`).
-
-## Structured Reporting
-
-- Each scan now generates a styled HTML report in `core/reports/`.
-- Reports include timestamp, platforms found, extracted links, and raw result snapshot.
-- Reports API:
-  - `GET /api/reports`
-  - `GET /api/reports/view/<filename>`
-  - `GET /api/reports/download/<filename>`
-
-## Notes
-
-- Username scans save reports to the `reports/` directory.
-- If a tool is not installed, the toolkit shows a clean error message and continues.
-- All scan activities are logged in `logs.txt`.
-
-## Disclaimer
-
-Use this toolkit only for legal and authorized security research.
+Use this toolkit only for legal, authorized, and ethical security research.
