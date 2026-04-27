@@ -6,6 +6,8 @@ logs.txt
 
 frontend/node_modules/
 frontend/dist/
+core/reports/*.html
+reports/*.html
 
 .DS_Store
 Thumbs.db
